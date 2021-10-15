@@ -16,12 +16,9 @@ No posts found yet
 
 
 @forelse ($posts as $key=> $post )
-@if($loop->even)
-<div>{{$key}}.{{$post['title']}}</div>
-@else
-<div style="background-color:silver">{{$key}}.{{$post['title']}}</div>
-{{-- else has to be renamed as empty --}}
-@endif
+
+{{-- including sub view from posts/partials/post --}}
+@include('posts.partials.post')
 @empty
 No Posts found yet
 @endforelse
