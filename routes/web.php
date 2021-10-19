@@ -1,17 +1,9 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| contains the "web" middleware group. Now create something great!
-|
- */
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\AboutController;
+use App\Http\Controllers\PostsController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -27,14 +19,24 @@ Route::get('/', function () {
 Route::view('/pizza', 'pizza');
 
 //BLOG home index
-Route::get('/blog', function () {
-    return view('blog_home.index');
-});
+//Route::get('/blog', function () {
+//    return view('blog_home.index');
+//});
+//
+////Contact Index
+//Route::get('/contact', function () {
+//    return view('blog_home.contact');
+//})->name('contact . index');
 
-//Contact Index
-Route::get('/contact', function () {
-    return view('blog_home.contact');
-})->name('contact . index');
+//using controllers to achieve the view
+//controller-Name- Home-Route
+
+Route::get('/blog', [HomeController::class, 'home'])
+    ->name('blog_home.index');
+Route::get('/contact', [HomeController::class, 'contact'])
+    ->name('contact.index');
+//when creating single action don't put action in brackets
+Route::get('/single', AboutController::class);
 
 //....................................................................//
 //naive way of params
@@ -60,83 +62,88 @@ Route::get('/recent-post/{days_ago?}', function ($daysAgo = 10) {
 //middleware auth will show some issue but it will go away
 //...............................................................................//
 
-//using regular expression
+
 //posts
+//moving post variable to PostController and accessing from here
+//$posts = [
+//    1 => [
+//        'title' => 'Intro to Laravel',
+//        'content' => 'This is a short intro to Laravel',
+//        'is_new' => true,
+//        'has_comments' => true
+//    ],
+//    2 => [
+//        'title' => 'Intro to PHP',
+//        'content' => 'This is a short intro to PHP',
+//        'is_new' => false
+//    ],
+//    3 => [
+//        'title' => 'Intro to Golang',
+//        'content' => 'This is a short intro to Golang',
+//        'is_new' => false
+//    ]
+//];
 
-$posts = [
-    1 => [
-        'title' => 'Intro to Laravel',
-        'content' => 'This is a short intro to Laravel',
-        'is_new' => true,
-        'has_comments' => true
-    ],
-    2 => [
-        'title' => 'Intro to PHP',
-        'content' => 'This is a short intro to PHP',
-        'is_new' => false
-    ],
-    3 => [
-        'title' => 'Intro to Golang',
-        'content' => 'This is a short intro to Golang',
-        'is_new' => false
-    ]
-];
-
-Route::get('/posts', function () use ($posts) {
-    // dd(request()->all());
-    // dd((int)request()->query('page', 5));
-//   // compact($posts) === ['posts' => $posts])
-    return view('posts.index', ['posts' => $posts]);
-});
-Route::get('/posts/{id}', function ($id) use ($posts) {
-    //return 'posts ' . $id;
-    abort_if(!isset($posts[$id]), 404);
-    return view('posts.show', ['post' => $posts[$id]]);
-})->where([
-    'id' => '[0-9]+',
-])->name('posts.show');
-
-
+//Route::get('/posts', function () use ($posts) {
+//    // dd(request()->all());
+//    // dd((int)request()->query('page', 5));
+////   // compact($posts) === ['posts' => $posts])
+//    return view('posts.index', ['posts' => $posts]);
+//});
+//Route::get('/posts/{id}', function ($id) use ($posts) {
+//    //return 'posts ' . $id;
+//    abort_if(!isset($posts[$id]), 404);
+//    return view('posts.show', ['post' => $posts[$id]]);
+//})->where([
+//    'id' => '[0-9]+',
+//])->name('posts.show');
 // Route::view('/show', 'posts.show');
+
+Route::resource('posts', postsController::class)->only(['index', 'show']);
+
+
+// .................................................................................//
 // Responses and cookies
+//Route::get('/fun/json', function () use ($posts) {
+//    return response()->json($posts);
+//});
+
 //Response helper
-Route:: get('fun/responses', function () use ($posts) {
-    return response($posts, 201)
-        ->Header('content-type', 'application/json')
-        ->cookie('My_Cookie_1', 'swap_Cookie', '3600');
-});
+//Route:: get('fun/responses', function () use ($posts) {
+//    return response($posts, 201)
+//        ->Header('content-type', 'application/json')
+//        ->cookie('My_Cookie_1', 'swap_Cookie', '3600');
+//});
 //response is file for the response status - 201 is the request has succeeded
 //header is what kind of file it is expecting
 //cookie is cookie timings
 //-------------------------Route Grouping --------------------//
 
 
-Route::prefix('/funG')->name('fun.')->group(function () use ($posts) {
-    //Redirecting the webpage
-    Route::get('fun/redirect', function () {
-        return redirect('/pizza');
-    });
-// redirecting to back
-    Route:: get('fun/back', function () {
-        return back();
-    });
-//redirecting to the named Route
-    Route:: get('fun/named-route', function () {
-        return redirect()->route('posts.show', ['id' => 0]);
-    });
+//Route::prefix('/funG')->name('fun.')->group(function () use ($posts) {
+//    //Redirecting the webpage
+//    Route::get('fun/redirect', function () {
+//        return redirect('/pizza');
+//    });
+//// redirecting to back
+//    Route:: get('fun/back', function () {
+//        return back();
+//    });
+////redirecting to the named Route
+//    Route:: get('fun/named-route', function () {
+//        return redirect()->route('posts.show', ['id' => 0]);
+//    });
+//
+//    Route:: get('fun/away', function () {
+//        return redirect()->away('https://google.co.in');
+//    });
+//
+//
+//    Route:: get('fun/download', function () {
+//        return response()->download(public_path('/32.png'), '100daysofcode.jpg');
+//    });
 
-    Route:: get('fun/away', function () {
-        return redirect()->away('https://google.co.in');
-    });
-
-    Route::get('/fun/json', function () use ($posts) {
-        return response()->json($posts);
-    });
-    Route:: get('fun/download', function () {
-        return response()->download(public_path('/32.png'), '100daysofcode.jpg');
-    });
-
-});//grouped barackets
+//});//grouped brackets
 
 
 
